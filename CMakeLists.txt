@@ -5,6 +5,12 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(APPLE)
+  # OBJC (not just OBJCXX) is required so GLFW's own vendored .m files
+  # compile as plain Objective-C (permissive void*->T* conversions, like C) —
+  # without it CMake drives .m files through the C++ frontend too, and
+  # GLFW's Cocoa backend fails to build under C++'s stricter pointer-
+  # conversion rules.
+  enable_language(OBJC)
   enable_language(OBJCXX)
   set(CMAKE_OBJCXX_STANDARD 20)
 endif()

@@ -6,6 +6,7 @@
 #elif defined(__linux__)
 #include <unistd.h>
 #endif
+#include <chrono>
 #include <filesystem>
 
 #include "render/gl_loader.h"
@@ -807,15 +808,17 @@ int main(int argc, char** argv) {
     if (parsed.hasTexture) {
       // Decode via a temp file so the existing fit/resize pipeline (512px
       // cap, canvas-style resize) stays exactly what loadCustomTexture uses.
-      char tmpDir[MAX_PATH], tmpFile[MAX_PATH];
-      GetTempPathA(MAX_PATH, tmpDir);
-      GetTempFileNameA(tmpDir, "bmt", 0, tmpFile);
-      FILE* tf = std::fopen(tmpFile, "wb");
+      const std::string tmpFile =
+          (std::filesystem::temp_directory_path() /
+           ("texturify_import_" +
+            std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()) + ".png"))
+              .string();
+      FILE* tf = std::fopen(tmpFile.c_str(), "wb");
       if (tf) {
         std::fwrite(parsed.texturePngBytes.data(), 1, parsed.texturePngBytes.size(), tf);
         std::fclose(tf);
         auto entry = app::loadCustomTexture(tmpFile);
-        std::remove(tmpFile);
+        std::remove(tmpFile.c_str());
         if (entry) {
           customTextureEntry = std::move(entry);
           customTextureEntry->name = (parsed.hasSettings && !parsed.settings.activeMapName.empty())
