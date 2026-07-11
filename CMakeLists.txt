@@ -18,6 +18,18 @@ endif()
 if(MSVC)
   add_compile_options(/utf-8 /fp:precise /bigobj)
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS NOMINMAX WIN32_LEAN_AND_MEAN)
+else()
+  # GCC/Clang equivalent of MSVC's /fp:precise above: without this, the
+  # compiler is free to contract chained a*b+c expressions (quadric-error
+  # math in decimation.cpp is full of them) into a single fused-multiply-add
+  # instruction. x86_64 has no baseline FMA (needs explicit AVX2/FMA3
+  # targeting, not used here), but AArch64 (Apple Silicon macOS runners) has
+  # native FMA and Clang uses it there by default — producing a different
+  # rounding result than x86_64/MSVC for the exact same source expression and
+  # breaking the bit-identical fidelity contract (see CLAUDE.md) across
+  # architectures. -ffp-contract=off forces separate, standard-rounded
+  # multiply and add on every platform.
+  add_compile_options(-ffp-contract=off)
 endif()
 
 # ── GLFW ─────────────────────────────────────────────────────────────────────
