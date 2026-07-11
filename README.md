@@ -17,12 +17,6 @@ cmake --build build --config Release
 build/Release/texturify.exe
 ```
 
-The original web app source is expected in `reference/` (git-ignored) for the golden verification tests:
-
-```bash
-git clone https://github.com/CNCKitchen/stlTexturizer.git reference
-```
-
 ## Third-party
 
 - [Dear ImGui](https://github.com/ocornut/imgui) (MIT), [GLFW](https://glfw.org) (zlib), [stb](https://github.com/nothings/stb) (public domain/MIT), [miniz](https://github.com/richgel999/miniz) (MIT)
