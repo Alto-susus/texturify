@@ -1,0 +1,115 @@
+name: Release
+
+# Builds Windows/.zip, macOS/.dmg, and Linux/.deb on their native runners and
+# publishes all three to a GitHub Release. Triggers on any `v*` tag push
+# (e.g. `git tag v1.0.0 && git push origin v1.0.0`); `workflow_dispatch` lets
+# it be run by hand from the Actions tab for a test build without cutting a
+# tag (uploads build artifacts only — the final `release` job that creates
+# the GitHub Release still requires a tag push, see its `if:` condition).
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Run golden verification suite
+        run: ./build/Release/texturify_verify.exe
+
+      - name: Package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item -Recurse build/Release dist/Texturify
+          Remove-Item -ErrorAction SilentlyContinue dist/Texturify/texturify_verify.exe
+          Compress-Archive -Path dist/Texturify -DestinationPath dist/Texturify-windows-x64.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: texturify-windows
+          path: dist/Texturify-windows-x64.zip
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release -- -j$(sysctl -n hw.ncpu)
+
+      - name: Run golden verification suite
+        run: ./build/texturify_verify
+
+      - name: Package (.dmg)
+        run: |
+          mkdir -p dist
+          cp -R build/texturify.app dist/
+          hdiutil create -volname Texturify -srcfolder dist/texturify.app \
+            -ov -format UDZO dist/Texturify-macos.dmg
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: texturify-macos
+          path: dist/Texturify-macos.dmg
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xorg-dev libgl1-mesa-dev
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release -- -j$(nproc)
+
+      - name: Run golden verification suite
+        run: ./build/texturify_verify
+
+      - name: Package (.deb)
+        run: (cd build && cpack -G DEB)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: texturify-linux-deb
+          path: build/*.deb
+
+  release:
+    needs: [windows, macos, linux]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/texturify-windows/*.zip
+            artifacts/texturify-macos/*.dmg
+            artifacts/texturify-linux-deb/*.deb
+          generate_release_notes: true

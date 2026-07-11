@@ -1,0 +1,15 @@
+{
+ "before": {
+  "open": 0,
+  "nonManifold": 0,
+  "tris": 5914
+ },
+ "beforeSlivers": 0,
+ "after": {
+  "open": 0,
+  "nonManifold": 0,
+  "tris": 5914
+ },
+ "afterSlivers": 0,
+ "triCount": 5914
+}

@@ -1,0 +1,4 @@
+build/
+reference/
+*.user
+.vs/

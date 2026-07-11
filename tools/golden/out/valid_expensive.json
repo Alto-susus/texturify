@@ -1,0 +1,12 @@
+{
+ "intersectingPairs": 1,
+ "overlappingPairs": 2,
+ "intersectFaces": [
+  2,
+  13
+ ],
+ "overlapFaces": [
+  0,
+  12
+ ]
+}

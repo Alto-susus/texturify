@@ -1,0 +1,4 @@
+// Application icon resource — embeds app.ico as the .exe's icon (shown in
+// Explorer, the taskbar, and Alt-Tab). The lowest-numbered ICON resource in
+// the file is what Windows uses as the executable's default icon.
+101 ICON "app.ico"

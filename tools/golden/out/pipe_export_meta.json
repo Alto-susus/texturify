@@ -1,0 +1,13 @@
+{
+ "safetyCapHit": false,
+ "runDecimation": true,
+ "needsDecimation": true,
+ "repairStats": {
+  "beforeSlivers": 0,
+  "open": 0,
+  "nonManifold": 0,
+  "slivers": 0,
+  "tris": 5000
+ },
+ "triCount": 5000
+}

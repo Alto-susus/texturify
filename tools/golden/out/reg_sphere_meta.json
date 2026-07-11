@@ -1,0 +1,13 @@
+{
+ "collapseCount": 59,
+ "rejectStats": {
+  "frozen": 0,
+  "wingCount": 0,
+  "linkCondition": 0,
+  "edgeCap": 0,
+  "normalChange": 11,
+  "degenerate": 0,
+  "foldedApex": 0
+ },
+ "triCount": 11712
+}

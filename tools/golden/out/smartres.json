@@ -1,0 +1,18 @@
+{
+ "edge": 0.36,
+ "diagnostics": {
+  "pixelsPerEdge": 1.5,
+  "meanGrad": 18.345387390549806,
+  "sharpFrac": 0.11550468262226847,
+  "pixMm": 0.234375,
+  "period_mm": 15,
+  "surfaceArea": 2797.776199347656,
+  "detailEdge": 0.3515625,
+  "budgetEdge": 0.03749513674825733,
+  "estTriangles": 155136,
+  "triBudget": 12000000,
+  "budgetClamped": false,
+  "edgeClamped": false,
+  "recommendedMaxTri": 50000
+ }
+}

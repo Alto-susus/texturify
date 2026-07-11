@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Texturify
+Comment=Native mesh-texturing / displacement tool
+Exec=/usr/bin/texturify
+Icon=texturify
+Terminal=false
+Categories=Graphics;3DGraphics;
