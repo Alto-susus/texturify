@@ -109,4 +109,6 @@ std::optional<std::string> showSaveFileDialog(const char* title,
   return appendDefaultExt(*path, defaultExt);
 }
 
+bool nativeFileDialogAvailable() { return commandExists("zenity") || commandExists("kdialog"); }
+
 } // namespace app

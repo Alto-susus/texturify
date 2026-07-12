@@ -83,4 +83,6 @@ std::optional<std::string> showSaveFileDialog(const char* title,
   }
 }
 
+bool nativeFileDialogAvailable() { return true; }
+
 } // namespace app

@@ -418,8 +418,36 @@ int main(int argc, char** argv) {
     applyTextureEntry(*e, /*applyDefaults=*/true);
   };
 
+  // Guarded wrappers around app::show{Open,Save}FileDialog: on Linux those
+  // shell out to zenity/kdialog (file_dialog_linux.cpp) and return nullopt
+  // indistinguishably whether the user cancelled or neither tool is
+  // installed. Checking nativeFileDialogAvailable() first lets us surface a
+  // real, visible error for the latter instead of the button silently doing
+  // nothing (which is exactly what looked like a broken click before this).
+  auto guardedOpenDialog = [&](const char* title, const char* filterName,
+                               const char* filterExt) -> std::optional<std::string> {
+    if (!app::nativeFileDialogAvailable()) {
+      state.pipelineErrorMessage =
+          "No file picker found. Install zenity (sudo apt install zenity) or "
+          "kdialog, then restart Texturify.";
+      return std::nullopt;
+    }
+    return app::showOpenFileDialog(title, filterName, filterExt);
+  };
+  auto guardedSaveDialog = [&](const char* title, const char* filterName, const char* filterExt,
+                               const char* defaultName,
+                               const char* defaultExt) -> std::optional<std::string> {
+    if (!app::nativeFileDialogAvailable()) {
+      state.pipelineErrorMessage =
+          "No file picker found. Install zenity (sudo apt install zenity) or "
+          "kdialog, then restart Texturify.";
+      return std::nullopt;
+    }
+    return app::showSaveFileDialog(title, filterName, filterExt, defaultName, defaultExt);
+  };
+
   ctx.actions.importCustomTexture = [&]() {
-    auto path = app::showOpenFileDialog(
+    auto path = guardedOpenDialog(
         "Load displacement map", "Image files",
         "*.png;*.jpg;*.jpeg;*.bmp;*.tga;*.gif;*.psd;*.hdr;*.pic");
     if (!path) return;
@@ -451,8 +479,8 @@ int main(int argc, char** argv) {
   };
 
   ctx.actions.loadModel = [&]() {
-    auto path = app::showOpenFileDialog("Load model", "STL/OBJ/3MF files",
-                                        "*.stl;*.obj;*.3mf");
+    auto path = guardedOpenDialog("Load model", "STL/OBJ/3MF files",
+                                  "*.stl;*.obj;*.3mf");
     if (!path) return;
     core::LoadResult result = core::loadModelFile(*path);
     if (!result.ok) return;
@@ -662,16 +690,16 @@ int main(int argc, char** argv) {
   ctx.actions.exportStl = [&]() {
     const app::TextureEntry* e = activeTextureEntry();
     if (!e || pipelineRunner.running()) return;
-    auto path = app::showSaveFileDialog("Export STL", "STL files", "*.stl",
-                                        exportFileName("stl").c_str(), "stl");
+    auto path = guardedSaveDialog("Export STL", "STL files", "*.stl",
+                                  exportFileName("stl").c_str(), "stl");
     if (!path) return;
     pipelineRunner.start(app::PipelineJob::ExportStl, state, session, e->image, *path);
   };
   ctx.actions.export3mf = [&]() {
     const app::TextureEntry* e = activeTextureEntry();
     if (!e || pipelineRunner.running()) return;
-    auto path = app::showSaveFileDialog("Export 3MF", "3MF files", "*.3mf",
-                                        exportFileName("3mf").c_str(), "3mf");
+    auto path = guardedSaveDialog("Export 3MF", "3MF files", "*.3mf",
+                                  exportFileName("3mf").c_str(), "3mf");
     if (!path) return;
     pipelineRunner.start(app::PipelineJob::Export3mf, state, session, e->image, *path);
   };
@@ -760,9 +788,9 @@ int main(int argc, char** argv) {
   };
 
   ctx.actions.saveProject = [&]() {
-    auto path = app::showSaveFileDialog("Save Project", "Texturify project files",
-                                        "*.texturify", (state.meshName + ".texturify").c_str(),
-                                        "texturify");
+    auto path = guardedSaveDialog("Save Project", "Texturify project files",
+                                  "*.texturify", (state.meshName + ".texturify").c_str(),
+                                  "texturify");
     if (path) doSaveProjectTo(*path);
   };
 
@@ -854,8 +882,8 @@ int main(int argc, char** argv) {
   };
 
   ctx.actions.openProject = [&]() {
-    auto path = app::showOpenFileDialog("Open Project or Model", "Texturify/model/project files",
-                                        "*.texturify;*.stl;*.obj;*.3mf");
+    auto path = guardedOpenDialog("Open Project or Model", "Texturify/model/project files",
+                                  "*.texturify;*.stl;*.obj;*.3mf");
     if (path) doOpenProjectFrom(*path);
   };
 

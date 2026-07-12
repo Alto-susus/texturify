@@ -156,12 +156,20 @@ if(UNIX AND NOT APPLE)
   set(CPACK_DEBIAN_PACKAGE_MAINTAINER "otisfitzpatrickzxxf@outlook.com")
   set(CPACK_DEBIAN_PACKAGE_SECTION "graphics")
   set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-  # X11/GL runtime libs GLFW needs; zenity is the file-picker (see
-  # file_dialog_linux.cpp) — Recommends rather than Depends since kdialog is
-  # an equally valid fallback and the app degrades gracefully without either.
+  # X11/GL runtime libs GLFW needs, plus a native file picker (see
+  # file_dialog_linux.cpp): `zenity | kdialog` is Debian's "at least one of
+  # these" syntax, so apt/dpkg pull in whichever fits the desktop (zenity for
+  # GNOME, kdialog for KDE) rather than forcing one specific tool. This used
+  # to be a Recommends (skipped by plain `dpkg -i`, and by `apt` in
+  # Recommends-disabled environments like minimal containers/WSL) on the
+  # reasoning that the app "degrades gracefully" without either — in practice
+  # that meant Open/Save/Load model/Export silently did nothing with no
+  # explanation, indistinguishable from a broken button (see main.cpp's
+  # guardedOpenDialog/guardedSaveDialog, which now at least surface a clear
+  # error message in that case) — a real Depends is the actual fix for
+  # anyone installing via the .deb properly.
   set(CPACK_DEBIAN_PACKAGE_DEPENDS
-    "libc6, libgl1, libx11-6, libxrandr2, libxinerama1, libxcursor1, libxi6")
-  set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "zenity")
+    "libc6, libgl1, libx11-6, libxrandr2, libxinerama1, libxcursor1, libxi6, zenity | kdialog")
   set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
   include(CPack)
 endif()

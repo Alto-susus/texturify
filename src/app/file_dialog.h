@@ -22,4 +22,12 @@ std::optional<std::string> showSaveFileDialog(const char* title,
                                               const char* defaultName,
                                               const char* defaultExt);
 
+// Whether a native file picker is actually available on this system. Always
+// true on Windows/macOS. On Linux, showOpenFileDialog/showSaveFileDialog
+// shell out to zenity or kdialog (see file_dialog_linux.cpp) — if neither is
+// installed, those calls always silently return nullopt, indistinguishable
+// from the user cancelling. Callers should check this first and surface a
+// real error instead of a silent no-op.
+bool nativeFileDialogAvailable();
+
 } // namespace app
